@@ -1,0 +1,42 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# React Development Guidelines
+
+## React 19 Features
+- Leverage React 19's new features when appropriate
+- Use functional components exclusively
+- Implement proper error boundaries around components that might fail
+
+## Component Structure
+- Start with imports
+- Then TypeScript interfaces for props and state
+- Next component definition with function declaration
+- Hooks at the top of the component body
+- Helper functions next
+- Return JSX at the end
+
+## State Management
+- Use React hooks for local state
+- Initialize state with sensible defaults
+- Group related state with useReducer when appropriate
+- Use controlled components for form inputs
+
+## Event Handling
+- Use properly typed event handlers
+- Prefer inline arrow functions for simple handlers
+- Extract complex handlers to named functions
+- Ensure proper event cleanup in useEffect
+
+## Performance
+- Use React.memo for components that render often with the same props
+- Apply useMemo for expensive calculations
+- Use useCallback for functions passed to child components
+
+## TypeScript
+- Define explicit interfaces for component props
+- Use type unions when appropriate
+- Properly type event handlers and state
+- Avoid any when possible

@@ -1,0 +1,35 @@
+# ChronoLingua - Natural Date Parsing Demo
+
+This is a multi-lingual natural language date parsing application built with:
+- React 19
+- Next.js 15
+- TypeScript
+- Tailwind CSS
+- ShadCN UI
+- Sugar.js
+
+When working with this codebase, please follow these guidelines:
+
+1. Code Style:
+   - Use TypeScript for all components
+   - Follow functional component patterns
+   - Use React hooks appropriately
+   - Maintain proper type definitions
+
+2. Structure:
+   - Keep components small and focused
+   - Follow the established directory structure
+   - Use ShadCN UI components when available
+
+3. Date Parsing:
+   - Use Sugar.js for date parsing and formatting
+   - Always set the locale before parsing dates
+   - Validate parsed dates before displaying them
+
+4. Styling:
+   - Use Tailwind CSS for styling
+   - Follow responsive design principles
+   - Support both light and dark modes
+
+Note: This project has modern Cursor rules in the .cursor/rules/ directory.
+Please refer to those for more detailed guidelines. 

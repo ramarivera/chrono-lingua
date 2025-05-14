@@ -1,0 +1,59 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Sugar.js Guidelines
+
+## Date Parsing
+- Import Sugar correctly with both the core library and locales:
+  ```js
+  import Sugar from "sugar";
+  import "sugar/locales";
+  ```
+- Set the locale before parsing dates:
+  ```js
+  Sugar.Date.setLocale(locale);
+  ```
+- Create dates using Sugar.Date.create():
+  ```js
+  const date = Sugar.Date.create(naturalLanguageInput);
+  ```
+- Always validate the parsed date:
+  ```js
+  if (isNaN(date.getTime())) {
+    // Handle invalid date
+  }
+  ```
+
+## Date Formatting
+- Use Sugar's formatting capabilities:
+  ```js
+  const formatted = Sugar.Date.format(date, "{long}");
+  ```
+- Common format patterns:
+  - `{short}`: 5/8/2020
+  - `{medium}`: May 8, 2020
+  - `{long}`: May 8, 2020 3:45 PM
+  - `{full}`: Friday, May 8, 2020 3:45 PM
+  - Custom: `{yyyy}-{MM}-{dd}`: 2020-05-08
+
+## Locale Support
+- Set the locale before formatting:
+  ```js
+  Sugar.Date.setLocale('fr');
+  ```
+- Available locales in the project: en, de, fr, es, it, ja
+- When adding a new locale, ensure it's imported from Sugar
+
+## Relative Time
+- Parse relative time expressions:
+  ```js
+  // "tomorrow", "next week", "in 3 days"
+  const date = Sugar.Date.create(relativeTimeExpression);
+  ```
+- Format relative time:
+  ```js
+  const relative = Sugar.Date.relative(date);
+  ```
+

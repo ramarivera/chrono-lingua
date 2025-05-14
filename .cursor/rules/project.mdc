@@ -1,0 +1,33 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# ChronoLingua - Natural Date Parsing Demo
+
+## Project Overview
+- This is a Next.js application that demonstrates natural language date parsing in multiple languages
+- Uses Sugar.js for date parsing across different locales
+- Built with React 19, Next.js 15, TypeScript, and Shadcn UI components
+- Implements responsive design with Tailwind CSS
+
+## Code Style and Structure
+- Use TypeScript with strict typing for all code
+- Follow functional component patterns with React hooks
+- Maintain clean component structure with clear separation of concerns
+- Use descriptive variable names that indicate purpose
+
+## Component Guidelines
+- Keep components small and focused on a single responsibility
+- Extract reusable UI elements into the `components/ui` directory
+- Use Tailwind CSS for styling
+- Follow the established naming conventions in the project
+
+## State Management
+- Use React hooks (useState, useEffect) for local component state
+- Props should be properly typed with TypeScript interfaces
+- Avoid prop drilling by using composition when appropriate
+
+## Performance Considerations
+- Optimize React renders by properly memoizing components when needed
+- Ensure responsive design works across different device sizes
