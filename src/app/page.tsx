@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Sugar from "sugar";
 import "sugar/locales";
 
@@ -10,6 +10,8 @@ import { LocaleSelector } from "@/components/locale-selector";
 import { QuickSelect } from "@/components/quick-select";
 import { ErrorDisplay } from "@/components/error-display";
 import { ResultsDisplay } from "@/components/results-display";
+import { CompiledFormatsAccordion } from "@/components/compiled-formats-accordion";
+import { augmentLocaleWithPrefixes, parseUserDate } from "@/lib/date-locales";
 
 export default function Home() {
   const [locale, setLocale] = useState<string>("en");
@@ -18,6 +20,57 @@ export default function Home() {
   const [formattedDate, setFormattedDate] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [errorDetails, setErrorDetails] = useState<string>("");
+  const [compiledFormats, setCompiledFormats] = useState<string>("");
+
+  useEffect(() => {
+    augmentLocaleWithPrefixes(locale);
+  }, [locale]);
+
+  useEffect(() => {
+    // Update compiled formats whenever locale changes
+    const localeInfo = Sugar.Date.getLocale(locale);
+    if (localeInfo && localeInfo.compiledFormats) {
+      console.log("LOCALE INFO", localeInfo);
+      const replacer = (_key: string, value: unknown) => {
+        if (value instanceof RegExp) {
+          return value.toString();
+        }
+        return value;
+      };
+      setCompiledFormats(
+        JSON.stringify(localeInfo.compiledFormats, replacer, 2)
+      );
+    } else {
+      setCompiledFormats("");
+    }
+  }, [locale]);
+
+  const parseAndFormat = useCallback(
+    (input: string) => {
+      if (!input) {
+        setParsedDate(null);
+        setFormattedDate("");
+        setError("Unable to parse expression");
+        setErrorDetails(`Expression: ${input}`);
+        return;
+      }
+
+      const d = parseUserDate(input, { locale });
+
+      if (!d) {
+        setParsedDate(null);
+        setFormattedDate("");
+        setError("Unable to parse expression");
+        setErrorDetails(`Expression: ${input}`);
+      } else {
+        setError("");
+        setErrorDetails("");
+        setParsedDate(d);
+        setFormattedDate(Sugar.Date.format(d, "{long}"));
+      }
+    },
+    [locale]
+  );
 
   useEffect(() => {
     Sugar.Date.setLocale(locale);
@@ -28,29 +81,7 @@ export default function Home() {
       setParsedDate(null);
       setFormattedDate("");
     }
-  }, [dateInput, locale]);
-
-  const parseAndFormat = (input: string) => {
-    if (!input) {
-      setParsedDate(null);
-      setFormattedDate("");
-      setError("Unable to parse expression");
-      setErrorDetails(`Expression: ${input}`);
-      return;
-    }
-    const d = Sugar.Date.create(input);
-    if (isNaN(d.getTime())) {
-      setParsedDate(null);
-      setFormattedDate("");
-      setError("Unable to parse expression");
-      setErrorDetails(`Expression: ${input}`);
-    } else {
-      setError("");
-      setErrorDetails("");
-      setParsedDate(d);
-      setFormattedDate(Sugar.Date.format(d, "{long}"));
-    }
-  };
+  }, [dateInput, locale, parseAndFormat]);
 
   const quickSelectMap: Record<string, string[]> = {
     en: ["now", "today", "tomorrow", "next week", "next month", "in 3 days"],
@@ -168,6 +199,11 @@ export default function Home() {
           <ResultsDisplay
             parsedDate={parsedDate}
             formattedDate={formattedDate}
+          />
+
+          <CompiledFormatsAccordion
+            locale={locale}
+            compiledFormats={compiledFormats}
           />
         </CardContent>
       </Card>
