@@ -62,7 +62,7 @@ function collectAllLocaleWords(loc: sugarjs.Locale) {
     }
   });
 
-  // 3) parsingTokens.* values (they are regex strings, split by “|”)
+  // 3) parsingTokens.* values (they are regex strings, split by "|")
   if (loc.parsingTokens) {
     Object.values(loc.parsingTokens).forEach((reStr) =>
       reStr
@@ -138,9 +138,45 @@ export function normalizeDatePhrase(raw: string, localeName = "en") {
   if (!raw) return raw;
   const input = raw.toLowerCase().trim();
   const index = augmentLocaleWithPrefixes(localeName);
+  const loc = Sugar.Date.getLocale(localeName);
 
-  if (!index) {
+  if (!index || !loc) {
     throw new Error(`Locale "${localeName}" not found!`);
+  }
+
+  // Try to parse as is first
+  const testParse = Sugar.Date.create(input);
+  if (testParse && !isNaN(testParse.getTime())) {
+    return input; // Already valid, no need to normalize
+  }
+
+  // Split input into tokens
+  const tokens = input.split(/\s+/);
+
+  // Try to handle numeric patterns using locale info
+  // Check if first token is numeric and second might be a month
+  if (tokens.length >= 2 && /^\d+$/.test(tokens[0])) {
+    const num = tokens[0];
+    const possibleMonth = tokens[1];
+
+    // Check if second token might be a month using the locale's monthMap
+    const monthMap = getValueFromLocale<Record<string, string>>(
+      loc,
+      "monthMap"
+    );
+
+    if (
+      monthMap &&
+      (possibleMonth in monthMap ||
+        Object.keys(monthMap).some((m) => m.startsWith(possibleMonth)))
+    ) {
+      // Format input to include "of" connector if the locale has articles
+      const articles = getValueFromLocale<string[]>(loc, "articles") || [];
+      if (articles.length > 0) {
+        // Use the first article as a connector (equivalent to English "of")
+        return `${num} ${articles[0]} ${possibleMonth}`;
+      }
+    }
   }
 
   /* ① direct lookup + prefixes */
