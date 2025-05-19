@@ -77,6 +77,11 @@ function collectAllLocaleWords(loc: sugarjs.Locale) {
 
 const prefixIndexes = new Map<string, Map<string, string>>();
 
+/** Remove accents/diacritics for simplified matching */
+function stripAccents(str: string) {
+  return str.normalize("NFD").replace(/\p{Diacritic}/gu, "");
+}
+
 export function augmentLocaleWithPrefixes(localeName = "en", minPrefixLen = 2) {
   if (prefixIndexes.has(localeName)) {
     return prefixIndexes.get(localeName);
@@ -91,9 +96,15 @@ export function augmentLocaleWithPrefixes(localeName = "en", minPrefixLen = 2) {
   // Canonical form rule: longest word wins (helps "to" → "tomorrow")
   function register(word: string, canonical: string) {
     const entry = index.get(word);
-
     if (!entry || canonical.length > entry.length) {
       index.set(word, canonical);
+    }
+    const stripped = stripAccents(word);
+    if (stripped !== word) {
+      const existing = index.get(stripped);
+      if (!existing || canonical.length > existing.length) {
+        index.set(stripped, canonical);
+      }
     }
   }
 
@@ -113,19 +124,61 @@ export function augmentLocaleWithPrefixes(localeName = "en", minPrefixLen = 2) {
   });
 
   /* Manual synonyms / ambiguous overrides here */
-  const manual = {
-    t: "today",
-    to: "tomorrow",
-    tod: "today",
-    ton: "tonight",
-    nxt: "next",
-    prev: "last",
-    bday: "birthday",
-    wk: "week",
-    wks: "weeks",
-    yr: "year",
-    yrs: "years",
+  const manualByLocale: Record<string, Record<string, string>> = {
+    en: {
+      t: "today",
+      to: "tomorrow",
+      tod: "today",
+      ton: "tonight",
+      tmr: "tomorrow",
+      tmrw: "tomorrow",
+      tdy: "today",
+      tmo: "tomorrow",
+      tonite: "tonight",
+      yday: "yesterday",
+      wknd: "weekend",
+      nxt: "next",
+      prev: "last",
+      bday: "birthday",
+      wk: "week",
+      wks: "weeks",
+      yr: "year",
+      yrs: "years",
+    },
+    es: {
+      manana: "mañana",
+      man: "mañana",
+      prox: "próximo",
+      "prox.": "próximo",
+      sig: "próximo",
+    },
+    fr: {
+      ajd: "aujourd'hui",
+      auj: "aujourd'hui",
+      dem: "demain",
+    },
+    it: {
+      dom: "domani",
+      ogg: "oggi",
+      prox: "prossimo",
+    },
+    de: {
+      heut: "heute",
+      uebermorgen: "übermorgen",
+    },
+    ja: {
+      kyou: "今日",
+      kyo: "今日",
+      ashita: "明日",
+      kinou: "昨日",
+      ototoi: "一昨日",
+      asatte: "明後日",
+      raishuu: "来週",
+      raigetsu: "来月",
+    },
   };
+
+  const manual = manualByLocale[localeName] || {};
 
   Object.entries(manual).forEach(([k, v]) => index.set(k, v));
 
@@ -136,7 +189,11 @@ export function augmentLocaleWithPrefixes(localeName = "en", minPrefixLen = 2) {
 
 export function normalizeDatePhrase(raw: string, localeName = "en") {
   if (!raw) return raw;
-  const input = raw.toLowerCase().trim();
+  let input = raw.toLowerCase().trim();
+  // Normalize 24h time formats like "15h30" → "15:30" and "15h" → "15:00"
+  input = input.replace(/\b(\d{1,2})h(\d{2})?\b/g, (_m, h, m) => {
+    return `${h}:${m ?? "00"}`;
+  });
   const index = augmentLocaleWithPrefixes(localeName);
   const loc = Sugar.Date.getLocale(localeName);
 
@@ -189,12 +246,25 @@ export function normalizeDatePhrase(raw: string, localeName = "en") {
   let rebuilt = words.join(" ");
 
   /* ③ tiny typo-fix (distance == 1) per word */
+  const keys = [...index.keys()];
   rebuilt = rebuilt
     .split(/\s+/)
     .map((word) => {
       if (index.has(word)) return word; // already canonical
-      const near = [...index.keys()].find((w) => dlDistance(word, w) === 1);
-      return near ? index.get(near) : word;
+      let best: string | null = null;
+      let bestDist = Infinity;
+      for (const k of keys) {
+        const d = dlDistance(word, k);
+        if (d < bestDist) {
+          best = k;
+          bestDist = d;
+        }
+        if (bestDist === 0) break;
+      }
+      if (best && (bestDist === 1 || (word.length > 4 && bestDist === 2))) {
+        return index.get(best) as string;
+      }
+      return word;
     })
     .join(" ");
 
