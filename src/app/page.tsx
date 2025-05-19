@@ -118,6 +118,14 @@ export default function Home() {
       "tra 3 giorni",
     ],
     ja: ["今", "今日", "明日", "来週", "来月", "3日後"],
+    ru: [
+      "сейчас",
+      "сегодня",
+      "завтра",
+      "на следующей неделе",
+      "в следующем месяце",
+      "через 3 дня",
+    ],
   };
 
   const exampleTags = quickSelectMap[locale] ?? quickSelectMap["en"];
@@ -171,6 +179,7 @@ export default function Home() {
               { code: "es", label: "Español", flag: "🇪🇸" },
               { code: "it", label: "Italiano", flag: "🇮🇹" },
               { code: "ja", label: "日本語", flag: "🇯🇵" },
+              { code: "ru", label: "Русский", flag: "🇷🇺" },
             ]}
           />
           {/* Date Expression Input */}

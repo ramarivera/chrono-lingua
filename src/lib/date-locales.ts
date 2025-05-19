@@ -176,6 +176,15 @@ export function augmentLocaleWithPrefixes(localeName = "en", minPrefixLen = 2) {
       raishuu: "来週",
       raigetsu: "来月",
     },
+    ru: {
+      seg: "сегодня",
+      segod: "сегодня",
+      zavt: "завтра",
+      segodnya: "сегодня",
+      sevod: "сегодня",
+      sled: "следующий",
+      sledned: "следующая неделя",
+    },
   };
 
   const manual = manualByLocale[localeName] || {};
